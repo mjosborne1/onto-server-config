@@ -2,7 +2,7 @@
 - Python and the ability to install modules using pip. This will be automatic through the requirements file.
 - An input source which is the atom file from the syndication server
 - A file path for the output of the process , on Windows this might be C:\data\server-config\out 
-  on Mac/Linux it will be /home/user/data/rrs/out or similar where `user` is your account name
+  on Mac/Linux it will be /home/user/data/server-config/out or similar where `user` is your account name
 
 ### How to install this script (Weirdly have to manually install a few packages also)
    * `pip install -r requirements.txt`
