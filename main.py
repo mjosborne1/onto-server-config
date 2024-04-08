@@ -4,6 +4,7 @@ import feedparser
 from fhirclient import client
 import fhirclient.models.codesystem as cs
 import fhirclient.models.valueset as vs
+import fhirclient.models.conceptmap as cm
 
     
 def create_client(endpoint):
@@ -17,7 +18,7 @@ def create_client(endpoint):
 
 def get_valuesets(args,smart):
     """
-      Create a tsv file for import into Confluence from the atomio syndication file for the server
+      Create a tsv file of ValueSets for import into Confluence from the ontoserver
     """
     outfile = os.path.join(args.outdir,'ValueSets.txt')
     if os.path.exists(outfile):
@@ -38,7 +39,7 @@ def get_valuesets(args,smart):
 
 def get_codesystems(args,smart):
     """
-      Create a tsv file for import into Confluence from the atomio syndication file for the server
+      Create a tsv file of CodeSystems for import into Confluence from the ontoserver
     """
     outfile = os.path.join(args.outdir,'CodeSystems.txt')
     if os.path.exists(outfile):
@@ -55,6 +56,27 @@ def get_codesystems(args,smart):
         for code_sys in cs_list:
             f.write(f"{code_sys.id}\t{code_sys.url}\t{code_sys.name}\t{code_sys.status}\t{code_sys.version}\n")
         
+
+
+def get_conceptmaps(args,smart):
+    """
+      Create a tsv file of ConceptMaps for import into Confluence from the ontoserver
+    """
+    outfile = os.path.join(args.outdir,'ConceptMaps.txt')
+    if os.path.exists(outfile):
+        os.remove(outfile)
+    endpoint=args.endpoint
+    query = smart.prepare()
+    if not query:
+        print("Server is not ready: {0}".format(endpoint))
+        return None
+    cm_search=cm.ConceptMap.where(struct={})
+    cm_list = cm_search.perform_resources(smart.server)
+    with open(outfile, "w") as f:
+        f.write("ConceptMapID\tURL\tName\tstatus\tversion\n")
+        for c_map in cm_list:
+            f.write(f"{c_map.id}\t{c_map.url}\t{c_map.name}\t{c_map.status}\t{c_map.version}\n")
+
 
 def get_server_packages(args):
     """
@@ -90,6 +112,8 @@ print("...CodeSystems")
 get_codesystems(args,smart)
 print("...ValueSets")
 get_valuesets(args,smart)
+print("...ConceptMaps")
+get_conceptmaps(args,smart)
 print("...Server packages")
 get_server_packages(args)
 print("Finished")
