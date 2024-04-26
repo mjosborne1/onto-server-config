@@ -1,6 +1,7 @@
 import argparse
 import os
 import feedparser
+import igparser
 from fhirclient import client
 import fhirclient.models.codesystem as cs
 import fhirclient.models.valueset as vs
@@ -20,9 +21,10 @@ def get_valuesets(args,smart):
     """
       Create a tsv file of ValueSets for import into Confluence from the ontoserver
     """
-    outfile = os.path.join(args.outdir,'ValueSets.txt')
+    outfile = os.path.join(args.outdir,'ValueSets.txt')    
     if os.path.exists(outfile):
         os.remove(outfile)
+    vs_dict = igparser.main(args.outdir)    
     endpoint=args.endpoint
     query = smart.prepare()
     if not query:
@@ -31,9 +33,15 @@ def get_valuesets(args,smart):
     vs_search=vs.ValueSet.where(struct={})
     vs_list = vs_search.perform_resources(smart.server)
     with open(outfile, "w") as f:
-        f.write("ValueSetID\tURL\tName\tstatus\tversion\n")
-        for val_set in vs_list:
-            f.write(f"{val_set.id}\t{val_set.url}\t{val_set.name}\t{val_set.status}\t{val_set.version}\n")
+        f.write("ValueSetID\tURL\tName\tstatus\tversion\tFound in FHIR IGs\n")
+        for val_set in vs_list:            
+            vsurl = val_set.url
+            if vsurl in vs_dict:
+                for item in vs_dict[vsurl]:
+                     itemstr= ",".join(map(str, item))
+                f.write(f"{val_set.id}\t{val_set.url}\t{val_set.name}\t{val_set.status}\t{val_set.version}\t{itemstr}\n")
+            else:
+                f.write(f"{val_set.id}\t{val_set.url}\t{val_set.name}\t{val_set.status}\t{val_set.version}\tNot used\n")
         
 
 
